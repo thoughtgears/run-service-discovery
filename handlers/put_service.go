@@ -18,6 +18,11 @@ func UpdateService(firestoreDB *db.FirestoreDB) gin.HandlerFunc {
 			return
 		}
 
+		if err := service.ValidateURL(); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
 		service.ID = db.SetID(name)
 
 		existingService, err := firestoreDB.GetService(ctx, service.ID)

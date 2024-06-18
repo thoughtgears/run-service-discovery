@@ -20,8 +20,8 @@ func PostService(firestoreDB *db.FirestoreDB) gin.HandlerFunc {
 			return
 		}
 
-		if service.Name == "" || service.URL == "" {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Name and URL cannot be empty"})
+		if err := service.Validate(); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
