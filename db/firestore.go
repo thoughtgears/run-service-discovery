@@ -41,7 +41,7 @@ func (db *FirestoreDB) GetService(ctx context.Context, ID string) (*Service, err
 	docRef := db.client.Collection(db.collection).Doc(ID)
 	doc, err := docRef.Get(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting document in firestore")
 	}
 
 	if err := doc.DataTo(&service); err != nil {

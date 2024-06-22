@@ -13,13 +13,18 @@ func UpdateService(firestoreDB *db2.FirestoreDB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		name := ctx.Param("name")
 
+		if name == "" {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "/service/:name is required"})
+			return
+		}
+
 		var service db2.Service
 		if err := ctx.ShouldBindJSON(&service); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		if err := service.ValidateURL(); err != nil {
+		if err := service.Validate(); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}

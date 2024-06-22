@@ -14,6 +14,11 @@ func DeleteService(firestoreDB *db.FirestoreDB) gin.HandlerFunc {
 		name := ctx.Param("name")
 		env := ctx.Query("environment")
 
+		if name == "" || env == "" {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "/service/:name?environment=env is required"})
+			return
+		}
+
 		ID := db.SetID(fmt.Sprintf("%s-%s", name, env))
 
 		if err := firestoreDB.DeleteService(ctx, ID); err != nil {
