@@ -21,13 +21,16 @@ const (
 
 // Service represents a service in the database
 // ID is a sha256 hash of the service name
-// Name is the name of the service
+// Name is the service name
 // URL is the URL of the service
+// Environment is the environment where the service is running
+// Description is a brief description of the service
 type Service struct {
 	ID          string      `json:"-" firestore:"id"`
 	Name        string      `json:"name" firestore:"name" validate:"required,min=1"`
 	URL         string      `json:"url" firestore:"url" validate:"required,min=1"`
 	Environment Environment `json:"environment" firestore:"environment" validate:"required,min=1"`
+	Description string      `json:"description" firestore:"description"`
 }
 
 // Validate the service model ensuring URL and Environment are valid

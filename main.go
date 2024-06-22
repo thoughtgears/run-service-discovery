@@ -3,33 +3,38 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"time"
+
+	"github.com/kelseyhightower/envconfig"
 
 	"github.com/gin-contrib/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"github.com/thoughtgears/run-service-discovery/db"
 	"github.com/thoughtgears/run-service-discovery/handlers"
-	"github.com/thoughtgears/run-service-discovery/pkg/config"
-	"github.com/thoughtgears/run-service-discovery/pkg/db"
 )
 
-func main() {
-	// Set the logger configuration for GCP stackdriver
+type Config struct {
+	Port         string `envconfig:"PORT" default:"8080"`
+	GcpProjectID string `envconfig:"GCP_PROJECT_ID" required:"true"`
+}
+
+var config Config
+
+func init() {
+	envconfig.MustProcess("", &config)
+
 	zerolog.LevelFieldName = "severity"
 	zerolog.TimestampFieldName = "timestamp"
 	zerolog.TimeFieldFormat = time.RFC3339Nano
+}
 
-	// Load the configuration
-	cfg, err := config.NewConfig()
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed to load config")
-	}
-
-	// Create a new Firestore client
+func main() {
 	ctx := context.Background()
-	firestoreDB, err := db.NewFirestoreDB(ctx, cfg.GcpProjectID)
+	firestoreDB, err := db.NewFirestoreDB(ctx, config.GcpProjectID)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create Firestore client")
 	}
@@ -46,10 +51,12 @@ func main() {
 	router.POST("/services", handlers.PostService(firestoreDB))
 	router.PUT("/services/:name", handlers.UpdateService(firestoreDB))
 	router.GET("/services/:name", handlers.GetService(firestoreDB))
+	router.GET("/services", handlers.GetServices(firestoreDB))
+	router.DELETE("/services/:name", handlers.DeleteService(firestoreDB))
 
 	// Start the server
-	log.Info().Msgf("server running on port %s", cfg.Port)
-	if err := router.Run(fmt.Sprintf(":%s", cfg.Port)); err != nil {
+	log.Info().Msgf("server running on port %s", config.Port)
+	if err := router.Run(fmt.Sprintf(":%s", config.Port)); err != nil {
 		log.Fatal().Err(err).Msg("failed to start server")
 	}
 }

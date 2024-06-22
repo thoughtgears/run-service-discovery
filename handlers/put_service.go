@@ -1,18 +1,19 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	db2 "github.com/thoughtgears/run-service-discovery/db"
 
-	"github.com/thoughtgears/run-service-discovery/pkg/db"
+	"github.com/gin-gonic/gin"
 )
 
-func UpdateService(firestoreDB *db.FirestoreDB) gin.HandlerFunc {
+func UpdateService(firestoreDB *db2.FirestoreDB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		name := ctx.Param("name")
 
-		var service db.Service
+		var service db2.Service
 		if err := ctx.ShouldBindJSON(&service); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -23,7 +24,7 @@ func UpdateService(firestoreDB *db.FirestoreDB) gin.HandlerFunc {
 			return
 		}
 
-		service.ID = db.SetID(name)
+		service.ID = db2.SetID(fmt.Sprintf("%s-%s", name, service.Environment))
 
 		existingService, err := firestoreDB.GetService(ctx, service.ID)
 		if err != nil || existingService == nil {

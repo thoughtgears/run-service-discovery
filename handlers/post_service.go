@@ -1,11 +1,11 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-
-	"github.com/thoughtgears/run-service-discovery/pkg/db"
+	"github.com/thoughtgears/run-service-discovery/db"
 )
 
 // PostService registers a new service in Firestore
@@ -25,7 +25,7 @@ func PostService(firestoreDB *db.FirestoreDB) gin.HandlerFunc {
 			return
 		}
 
-		service.ID = db.SetID(service.Name)
+		service.ID = db.SetID(fmt.Sprintf("%s-%s", service.Name, service.Environment))
 
 		existingService, err := firestoreDB.GetService(ctx, service.ID)
 		if err == nil && existingService != nil {

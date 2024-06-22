@@ -1,11 +1,12 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/thoughtgears/run-service-discovery/db"
 
-	"github.com/thoughtgears/run-service-discovery/pkg/db"
+	"github.com/gin-gonic/gin"
 )
 
 // GetService retrieves a service from Firestore by its name
@@ -13,8 +14,9 @@ import (
 func GetService(firestoreDB *db.FirestoreDB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		name := ctx.Param("name")
+		env := ctx.Query("environment")
 
-		ID := db.SetID(name)
+		ID := db.SetID(fmt.Sprintf("%s-%s", name, env))
 
 		service, err := firestoreDB.GetService(ctx, ID)
 		if err != nil || service == nil {

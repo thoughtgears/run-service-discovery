@@ -6,6 +6,8 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	"google.golang.org/api/iterator"
+
 	"cloud.google.com/go/firestore"
 )
 
@@ -49,6 +51,32 @@ func (db *FirestoreDB) GetService(ctx context.Context, ID string) (*Service, err
 	return &service, nil
 }
 
+// GetServices retrieves a list of services from Firestore
+func (db *FirestoreDB) GetServices(ctx context.Context) ([]*Service, error) {
+	var services []*Service
+
+	iter := db.client.Collection(db.collection).Documents(ctx)
+
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("error getting document: %v", err)
+		}
+		var service *Service
+
+		if err := doc.DataTo(&service); err != nil {
+			return nil, fmt.Errorf("error parsing document: %v", err)
+		}
+
+		services = append(services, service)
+	}
+
+	return services, nil
+}
+
 // SetService sets a service in Firestore, it will be used both for updating and creating services
 // If the service does not exist, it will be created
 func (db *FirestoreDB) SetService(ctx context.Context, ID string, data Service) error {
@@ -70,4 +98,10 @@ func (db *FirestoreDB) UpdateServiceURL(ctx context.Context, ID string, url stri
 func SetID(name string) string {
 	hash := sha256.Sum256([]byte(name))
 	return hex.EncodeToString(hash[:])
+}
+
+// DeleteService deletes a service from Firestore by its ID
+func (db *FirestoreDB) DeleteService(ctx context.Context, ID string) error {
+	_, err := db.client.Collection(db.collection).Doc(ID).Delete(ctx)
+	return err
 }
