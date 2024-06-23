@@ -7,7 +7,8 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-const cloudRunURLRegex = `^https://(?:[-a-zA-Z0-9]+\.)*[-a-zA-Z0-9]+\.[a-zA-Z]{2,}(:[0-9]+)?(/.*)?$`
+// const cloudRunURLRegex = `^https://(?:[-a-zA-Z0-9]+\.)*[-a-zA-Z0-9]+\.[a-zA-Z]{2,}(:[0-9]+)?(/.*)?$`
+const cloudRunURLRegex = `^(https?|http):\/\/[^\s/$.?#].[^\s]*$`
 
 var cloudRunURLPattern = regexp.MustCompile(cloudRunURLRegex)
 
@@ -27,7 +28,7 @@ const (
 // Description is a brief description of the service
 type Service struct {
 	ID          string      `json:"-" firestore:"id"`
-	Name        string      `json:"name" firestore:"name" validate:"required,min=1"`
+	Name        string      `json:"name" firestore:"name"`
 	URL         string      `json:"url" firestore:"url" validate:"required,min=1"`
 	Environment Environment `json:"environment" firestore:"environment" validate:"required,min=1"`
 	Description string      `json:"description" firestore:"description"`
