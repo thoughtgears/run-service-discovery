@@ -95,7 +95,7 @@ func TestService_Validate(t *testing.T) {
 				URL:         "https://example-service-12345-uc.a.run.app",
 				Environment: Prod,
 			},
-			true,
+			false,
 		},
 		{
 			"Empty URL",
